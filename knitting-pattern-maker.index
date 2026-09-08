@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>뜨개 도안 그리기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#F6F1E6;
+    --paper:#FFFDF8;
+    --ink:#2B2621;
+    --ink-soft:#6b6258;
+    --line:#DCD2BE;
+    --sage:#7C8B6F;
+    --indigo:#3E5C76;
+    --mustard:#D9A441;
+    --brick:#A8503E;
+    --cell: 26px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--cream);
+    color:var(--ink);
+    font-family:'Noto Sans KR', sans-serif;
+    min-height:100vh;
+  }
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size:28px 28px;
+    opacity:.35;
+    pointer-events:none;
+    z-index:0;
+  }
+  .wrap{position:relative; z-index:1; max-width:1180px; margin:0 auto; padding:28px 22px 60px;}
+
+  header{display:flex; align-items:baseline; gap:14px; margin-bottom:6px; flex-wrap:wrap;}
+  header h1{
+    font-family:'Gaegu', cursive;
+    font-weight:700;
+    font-size:2.5rem;
+    margin:0;
+    color:var(--brick);
+    letter-spacing:.5px;
+  }
+  header p{margin:0; color:var(--ink-soft); font-size:.95rem;}
+  .divider{
+    border:none; height:2px;
+    background:repeating-linear-gradient(90deg, var(--line) 0 10px, transparent 10px 16px);
+    margin:16px 0 20px;
+  }
+
+  /* ---- toolbar ---- */
+  .toolbar{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:16px 18px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:22px;
+    margin-bottom:20px;
+    box-shadow:0 2px 0 var(--line);
+  }
+  .tool-group{display:flex; flex-direction:column; gap:8px;}
+  .tool-group .label{font-size:.78rem; color:var(--ink-soft); font-weight:500;}
+  .size-row{display:flex; align-items:center; gap:8px;}
+  .size-row input{
+    width:56px; padding:6px 8px; border:1px solid var(--line); border-radius:8px;
+    font-family:inherit; font-size:.9rem; background:var(--cream); color:var(--ink);
+  }
+  .size-row span{color:var(--ink-soft); font-size:.85rem;}
+  .btn{
+    border:1px solid var(--line);
+    background:var(--cream);
+    color:var(--ink);
+    padding:7px 14px;
+    border-radius:8px;
+    font-family:'Noto Sans KR', sans-serif;
+    font-size:.85rem;
+    cursor:pointer;
+    transition:transform .08s ease, background .15s ease;
+  }
+  .btn:hover{background:#fff;}
+  .btn:active{transform:scale(.96);}
+  .btn.primary{background:var(--sage); color:#fff; border-color:var(--sage);}
+  .btn.primary:hover{background:#6c7a60;}
+  .btn.accent{background:var(--indigo); color:#fff; border-color:var(--indigo);}
+  .btn.accent:hover{background:#33506a;}
+  .btn.ghost{background:transparent;}
+
+  .stitch-palette, .color-palette{display:flex; gap:6px; flex-wrap:wrap; max-width:340px;}
+  .stitch-btn{
+    width:40px; height:40px;
+    border:1.5px solid var(--line);
+    border-radius:8px;
+    background:var(--paper);
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.05rem;
+    cursor:pointer;
+    color:var(--ink);
+  }
+  .stitch-btn.active{border-color:var(--brick); background:#fbe9e4; box-shadow:0 0 0 2px rgba(168,80,62,.15);}
+  .stitch-btn .tip{display:none;}
+
+  .swatch{
+    width:26px; height:26px;
+    border-radius:6px;
+    border:1.5px solid rgba(0,0,0,.12);
+    cursor:pointer;
+    position:relative;
+  }
+  .swatch.active::after{
+    content:"✓";
+    position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; font-size:.8rem; text-shadow:0 0 2px rgba(0,0,0,.6);
+  }
+  .swatch.custom-wrap{padding:0; border:1.5px dashed var(--line); background:var(--paper); display:flex; align-items:center; justify-content:center;}
+  .swatch.custom-wrap input[type=color]{
+    width:26px; height:26px; border:none; padding:0; background:none; cursor:pointer;
+  }
+
+  /* ---- main layout ---- */
+  main{display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap;}
+
+  .chart-panel{
+    flex:1 1 520px;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:16px;
+    box-shadow:0 2px 0 var(--line);
+    min-width:0;
+  }
+  .panel-title{font-family:'Gaegu', cursive; font-size:1.3rem; margin:0 0 10px; color:var(--indigo);}
+  .chart-scroll{overflow:auto; max-height:640px; border:1px solid var(--line); border-radius:8px; padding:8px; background:#fffef9;}
+  .chart-grid{
+    display:grid;
+    gap:1px;
+    background:var(--line);
+    width:max-content;
+    user-select:none;
+    touch-action:none;
+  }
+  .chart-cell{
+    width:var(--cell); height:var(--cell);
+    display:flex; align-items:center; justify-content:center;
+    font-size:calc(var(--cell) * 0.55);
+    cursor:pointer;
+    background:#fff;
+  }
+
+  .side{
+    flex:0 0 300px;
+    display:flex; flex-direction:column; gap:16px;
+    position:sticky; top:20px;
+  }
+  .preview-panel{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:16px;
+    box-shadow:0 2px 0 var(--line);
+  }
+  .preview-scroll{
+    overflow:auto; max-height:420px;
+    border:1px solid var(--line); border-radius:8px;
+    background:#efe6d3;
+    padding:10px;
+  }
+  .preview-fabric{display:flex; flex-direction:column; width:max-content; margin:0 auto;}
+  .p-row{display:flex;}
+  .p-row.odd{ margin-left: calc(var(--pcell) / 2); }
+  .p-cell{
+    width:var(--pcell); height:var(--pcell);
+    margin:-1px;
+    border-radius:45% 45% 30% 30% / 55% 55% 30% 30%;
+    box-shadow: inset 0 -2px 2px rgba(0,0,0,.18), inset 0 2px 1px rgba(255,255,255,.25);
+  }
+
+  .save-panel{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:16px;
+    box-shadow:0 2px 0 var(--line);
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .save-panel .btn{width:100%; text-align:center;}
+  #fileInput{display:none;}
+  .toast{
+    position:fixed; left:50%; bottom:26px; transform:translate(-50%, 20px);
+    background:var(--ink); color:#fff; padding:10px 18px; border-radius:10px;
+    font-size:.85rem; opacity:0; pointer-events:none;
+    transition:opacity .25s ease, transform .25s ease;
+    z-index:50;
+  }
+  .toast.show{opacity:1; transform:translate(-50%, 0);}
+
+  footer{margin-top:26px; color:var(--ink-soft); font-size:.8rem; text-align:center;}
+
+  @media (max-width:880px){
+    .side{position:static; flex:1 1 100%;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>🧶 뜨개 도안 그리기</h1>
+    <p>코 모양과 색을 골라 칸을 채우면, 오른쪽에서 완성된 모습을 바로 확인할 수 있어요.</p>
+  </header>
+  <hr class="divider">
+
+  <div class="toolbar">
+    <div class="tool-group">
+      <span class="label">도안 크기</span>
+      <div class="size-row">
+        <input type="number" id="rowsInput" min="1" max="60" value="20"> <span>단</span>
+        <input type="number" id="colsInput" min="1" max="60" value="20"> <span>코</span>
+        <button class="btn" id="resizeBtn">크기 적용</button>
+      </div>
+    </div>
+
+    <div class="tool-group">
+      <span class="label">코 모양 선택</span>
+      <div class="stitch-palette" id="stitchPalette"></div>
+    </div>
+
+    <div class="tool-group">
+      <span class="label">실 색상 선택</span>
+      <div class="color-palette" id="colorPalette"></div>
+    </div>
+
+    <div class="tool-group">
+      <span class="label">도구</span>
+      <div style="display:flex; gap:8px;">
+        <button class="btn" id="eraseBtn">🧹 지우개</button>
+        <button class="btn ghost" id="clearBtn">전체 지우기</button>
+      </div>
+    </div>
+  </div>
+
+  <main>
+    <section class="chart-panel">
+      <p class="panel-title">도안 차트</p>
+      <div class="chart-scroll">
+        <div class="chart-grid" id="chartGrid"></div>
+      </div>
+    </section>
+
+    <aside class="side">
+      <div class="preview-panel">
+        <p class="panel-title">완성 모습 미리보기</p>
+        <div class="preview-scroll">
+          <div class="preview-fabric" id="previewFabric"></div>
+        </div>
+      </div>
+
+      <div class="save-panel">
+        <p class="panel-title" style="margin-bottom:2px;">저장하기</p>
+        <button class="btn primary" id="saveJsonBtn">💾 도안 저장 (파일로 내려받기)</button>
+        <button class="btn accent" id="savePngBtn">🖼️ 완성 이미지로 저장</button>
+        <button class="btn" id="loadBtn">📂 저장한 도안 불러오기</button>
+        <input type="file" id="fileInput" accept="application/json">
+      </div>
+    </aside>
+  </main>
+
+  <footer>도안은 내 컴퓨터에 파일로 저장돼요. 브라우저를 닫아도 저장한 파일로 언제든 다시 불러올 수 있어요.</footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  // ---------- 데이터 정의 ----------
+  const STITCHES = {
+    knit:  { label:'겉뜨기',     symbol:'' },
+    purl:  { label:'안뜨기',     symbol:'—' },
+    yo:    { label:'걸기코',     symbol:'○' },
+    k2tog: { label:'오른코줄임', symbol:'╱' },
+    ssk:   { label:'왼코줄임',   symbol:'╲' },
+    slip:  { label:'걸러뜨기',   symbol:'V' },
+    bobble:{ label:'방울뜨기',   symbol:'●' },
+  };
+  const STITCH_ORDER = ['knit','purl','yo','k2tog','ssk','slip','bobble'];
+
+  const COLORS = [
+    '#FFFFFF', '#F2E2C4', '#E8B4A0', '#D9A441',
+    '#A8503E', '#7C8B6F', '#3E5C76', '#5B4B8A',
+    '#2B2621', '#8C8378', '#C46D8B', '#4C7A6A'
+  ];
+
+  const DEFAULT_COLOR = '#F2E2C4';
+
+  let rows = 20, cols = 20;
+  let grid = makeGrid(rows, cols);
+  let selectedStitch = 'knit';
+  let selectedColor = COLORS[3];
+  let eraseMode = false;
+  let pointerDown = false;
+
+  function makeGrid(r, c, oldGrid){
+    const g = [];
+    for(let i=0;i<r;i++){
+      const row = [];
+      for(let j=0;j<c;j++){
+        if(oldGrid && oldGrid[i] && oldGrid[i][j]){
+          row.push(oldGrid[i][j]);
+        } else {
+          row.push({ stitch:'knit', color: DEFAULT_COLOR });
+        }
+      }
+      g.push(row);
+    }
+    return g;
+  }
+
+  function contrastText(hex){
+    const c = hex.replace('#','');
+    const r = parseInt(c.substr(0,2),16), g = parseInt(c.substr(2,2),16), b = parseInt(c.substr(4,2),16);
+    const lum = (0.299*r + 0.587*g + 0.114*b)/255;
+    return lum > 0.6 ? '#2B2621' : '#FFFFFF';
+  }
+
+  // ---------- 팔레트 그리기 ----------
+  const stitchPaletteEl = document.getElementById('stitchPalette');
+  STITCH_ORDER.forEach(key=>{
+    const btn = document.createElement('button');
+    btn.className = 'stitch-btn' + (key===selectedStitch ? ' active':'');
+    btn.type = 'button';
+    btn.title = STITCHES[key].label;
+    btn.textContent = STITCHES[key].symbol || '□';
+    btn.dataset.stitch = key;
+    btn.addEventListener('click', ()=>{
+      selectedStitch = key;
+      eraseMode = false;
+      document.querySelectorAll('.stitch-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('eraseBtn').classList.remove('active');
+    });
+    stitchPaletteEl.appendChild(btn);
+  });
+
+  const colorPaletteEl = document.getElementById('colorPalette');
+  COLORS.forEach(hex=>{
+    const sw = document.createElement('div');
+    sw.className = 'swatch' + (hex===selectedColor ? ' active':'');
+    sw.style.background = hex;
+    sw.title = hex;
+    sw.addEventListener('click', ()=>{
+      selectedColor = hex;
+      document.querySelectorAll('.swatch').forEach(s=>s.classList.remove('active'));
+      sw.classList.add('active');
+    });
+    colorPaletteEl.appendChild(sw);
+  });
+  // 커스텀 색상
+  const customWrap = document.createElement('div');
+  customWrap.className = 'swatch custom-wrap';
+  const customInput = document.createElement('input');
+  customInput.type = 'color';
+  customInput.value = '#B08968';
+  customInput.addEventListener('input', ()=>{
+    selectedColor = customInput.value;
+    document.querySelectorAll('.swatch').forEach(s=>s.classList.remove('active'));
+    customWrap.classList.add('active');
+  });
+  customWrap.appendChild(customInput);
+  colorPaletteEl.appendChild(customWrap);
+
+  document.getElementById('eraseBtn').addEventListener('click', (e)=>{
+    eraseMode = !eraseMode;
+    e.target.classList.toggle('active', eraseMode);
+  });
+
+  document.getElementById('clearBtn').addEventListener('click', ()=>{
+    grid = makeGrid(rows, cols);
+    renderAll();
+    showToast('도안을 모두 지웠어요.');
+  });
+
+  // ---------- 차트 렌더 ----------
+  const chartGridEl = document.getElementById('chartGrid');
+  const previewFabricEl = document.getElementById('previewFabric');
+
+  function applyCell(i, j){
+    if(eraseMode){
+      grid[i][j] = { stitch:'knit', color: DEFAULT_COLOR };
+    } else {
+      grid[i][j] = { stitch: selectedStitch, color: selectedColor };
+    }
+    updateCellVisual(i, j);
+  }
+
+  function updateCellVisual(i, j){
+    const cell = grid[i][j];
+    const chartCell = chartGridEl.children[i*cols + j];
+    if(chartCell){
+      chartCell.style.background = cell.color;
+      chartCell.style.color = contrastText(cell.color);
+      chartCell.textContent = STITCHES[cell.stitch].symbol;
+    }
+    const pRow = previewFabricEl.children[i];
+    if(pRow){
+      const pCell = pRow.children[j];
+      if(pCell) pCell.style.background = cell.color;
+    }
+  }
+
+  function renderChart(){
+    chartGridEl.style.gridTemplateColumns = `repeat(${cols}, var(--cell))`;
+    chartGridEl.innerHTML = '';
+    for(let i=0;i<rows;i++){
+      for(let j=0;j<cols;j++){
+        const cell = document.createElement('div');
+        cell.className = 'chart-cell';
+        cell.style.background = grid[i][j].color;
+        cell.style.color = contrastText(grid[i][j].color);
+        cell.textContent = STITCHES[grid[i][j].stitch].symbol;
+        cell.dataset.i = i; cell.dataset.j = j;
+        cell.addEventListener('pointerdown', (e)=>{
+          pointerDown = true;
+          applyCell(i,j);
+          e.preventDefault();
+        });
+        cell.addEventListener('pointerenter', ()=>{
+          if(pointerDown) applyCell(i,j);
+        });
+        chartGridEl.appendChild(cell);
+      }
+    }
+  }
+
+  function renderPreview(){
+    const cellSize = Math.max(8, Math.min(22, Math.floor(360/cols)));
+    document.documentElement.style.setProperty('--pcell', cellSize+'px');
+    previewFabricEl.innerHTML = '';
+    for(let i=0;i<rows;i++){
+      const rowEl = document.createElement('div');
+      rowEl.className = 'p-row' + (i%2===1 ? ' odd':'');
+      for(let j=0;j<cols;j++){
+        const c = document.createElement('div');
+        c.className = 'p-cell';
+        c.style.background = grid[i][j].color;
+        rowEl.appendChild(c);
+      }
+      previewFabricEl.appendChild(rowEl);
+    }
+  }
+
+  function renderAll(){
+    renderChart();
+    renderPreview();
+  }
+
+  document.addEventListener('pointerup', ()=>{ pointerDown = false; });
+  document.addEventListener('pointerleave', ()=>{ pointerDown = false; });
+
+  // ---------- 크기 변경 ----------
+  document.getElementById('resizeBtn').addEventListener('click', ()=>{
+    const r = Math.max(1, Math.min(60, parseInt(document.getElementById('rowsInput').value) || rows));
+    const c = Math.max(1, Math.min(60, parseInt(document.getElementById('colsInput').value) || cols));
+    grid = makeGrid(r, c, grid);
+    rows = r; cols = c;
+    renderAll();
+    showToast('도안 크기를 변경했어요.');
+  });
+
+  // ---------- 저장 / 불러오기 ----------
+  function downloadBlob(blob, filename){
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url), 1000);
+  }
+
+  document.getElementById('saveJsonBtn').addEventListener('click', ()=>{
+    const data = { rows, cols, grid };
+    const blob = new Blob([JSON.stringify(data)], {type:'application/json'});
+    downloadBlob(blob, 'knit-pattern.json');
+    showToast('도안 파일을 저장했어요.');
+  });
+
+  document.getElementById('loadBtn').addEventListener('click', ()=>{
+    document.getElementById('fileInput').click();
+  });
+
+  document.getElementById('fileInput').addEventListener('change', (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev)=>{
+      try{
+        const data = JSON.parse(ev.target.result);
+        if(!data.grid || !data.rows || !data.cols) throw new Error('형식이 올바르지 않아요.');
+        rows = data.rows; cols = data.cols;
+        grid = makeGrid(rows, cols, data.grid);
+        document.getElementById('rowsInput').value = rows;
+        document.getElementById('colsInput').value = cols;
+        renderAll();
+        showToast('도안을 불러왔어요.');
+      }catch(err){
+        showToast('불러오기에 실패했어요: 올바른 도안 파일인지 확인해 주세요.');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  });
+
+  document.getElementById('savePngBtn').addEventListener('click', ()=>{
+    const cell = 24;
+    const canvas = document.createElement('canvas');
+    canvas.width = cols * cell;
+    canvas.height = rows * cell;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#EFE6D3';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    for(let i=0;i<rows;i++){
+      const offset = (i%2===1) ? cell/2 : 0;
+      for(let j=0;j<cols;j++){
+        const x = j*cell + offset;
+        const y = i*cell;
+        ctx.fillStyle = grid[i][j].color;
+        roundRectPath(ctx, x, y, cell-1, cell-1, cell*0.35);
+        ctx.fill();
+      }
+    }
+    canvas.toBlob((blob)=>{
+      downloadBlob(blob, 'knit-pattern.png');
+      showToast('완성 이미지를 저장했어요.');
+    });
+  });
+
+  function roundRectPath(ctx, x, y, w, h, r){
+    ctx.beginPath();
+    ctx.moveTo(x+r, y);
+    ctx.arcTo(x+w, y,   x+w, y+h, r);
+    ctx.arcTo(x+w, y+h, x,   y+h, r);
+    ctx.arcTo(x,   y+h, x,   y,   r);
+    ctx.arcTo(x,   y,   x+w, y,   r);
+    ctx.closePath();
+  }
+
+  // ---------- 토스트 ----------
+  let toastTimer = null;
+  function showToast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=>t.classList.remove('show'), 2200);
+  }
+
+  // 초기 렌더
+  document.getElementById('rowsInput').value = rows;
+  document.getElementById('colsInput').value = cols;
+  document.querySelector('.swatch').classList.add('active');
+  document.querySelectorAll('.swatch')[3].classList.add('active');
+  document.querySelectorAll('.swatch')[0].classList.remove('active');
+  renderAll();
+})();
+</script>
+</body>
+</html>
